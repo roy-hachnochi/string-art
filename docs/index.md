@@ -14,7 +14,7 @@
 <!-- Glider.js JS -->
 <script src="https://cdn.jsdelivr.net/npm/glider-js@1/glider.min.js"></script>
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://github.com/roy-hachnochi/string-art/blob/main/algorithmic_string_art_playground.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roy-hachnochi/string-art/blob/main/algorithmic_string_art_playground.ipynb)
 [![GitHub](https://img.shields.io/badge/GitHub-View%20Repo-blue?logo=github)](https://github.com/roy-hachnochi/string-art)
 
 ---
@@ -336,7 +336,7 @@ I'm winding down the work on this project for now, but here are a few directions
 
 I believe that this concludes the deep-dive into the process of developing my String-Art project. Although this has been a fairly long and thorough post, there are still some aspects of the project that I haven't covered, such as how we turn this into a PDF with instructions for physically making the String-Art, how we convert a non-continuous list of lines to a continuous one, how we initialize the canvas, and some other minor improvements I made in the algorithm.
 
-Feel free to try the [Colab playground](https://github.com/roy-hachnochi/string-art/blob/main/algorithmic_string_art_playground.ipynb), or reach out via [Email](roy.hachnochi@gmail.com) or [GitHub](https://github.com/roy-hachnochi/string-art) to bounce off ideas and improvements.
+Feel free to try the [Colab playground](https://colab.research.google.com/github/roy-hachnochi/string-art/blob/main/algorithmic_string_art_playground.ipynb), or reach out via [Email](roy.hachnochi@gmail.com) or [GitHub](https://github.com/roy-hachnochi/string-art) to bounce off ideas and improvements.
 
 
 ---
