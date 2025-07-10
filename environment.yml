@@ -1,0 +1,17 @@
+name: string-art
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - numpy=2.0.2
+  - scipy=1.14.1
+  - scikit-learn=1.6.0
+  - scikit-image=0.24.0
+  - opencv=4.10.0
+  - py-opencv=4.10.0
+  - pypdf2=3.0.1
+  - matplotlib=3.10.0
+  - pillow=11.0.0
+  - tqdm
+  - reportlab=4.4.1

@@ -1,0 +1,96 @@
+.main-content {
+  font-size: 16px;
+  line-height: 1.7;
+  max-width: 1300px;
+}
+
+.main-content h1 {
+  color: #00a090;
+  font-weight: 700;
+}
+
+.main-content h2 {
+  color: #00a090;
+  font-weight: 700;
+}
+
+.main-content h3 {
+  color: #00a090;
+  font-weight: 600;
+}
+
+.main-content h4 {
+  color: #00b070;
+  font-weight: 550;
+}
+
+.main-content p,
+.main-content li {
+  color: #333333;
+  text-align: justify;
+}
+
+/* Increase size of inline math */
+mjx-container[jax="CHTML"][display="false"] {
+  font-size: 18;
+}
+
+.glider {
+  max-width: 100%;
+  margin: auto;
+}
+
+.slide {
+  border-radius: 0px;
+  overflow: hidden;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  width: auto;
+}
+
+.slide img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+.glider-slide,
+.glider img {
+  width: auto;          /* or 100% if you want them to scale */
+  height: auto;
+  max-height: 300px;    /* Optional: cap height for uniformity */
+  max-width: 100%;      /* Prevents overflow on smaller screens */
+  object-fit: contain;  /* Ensures full image is visible */
+  margin-right: 1rem; /* ← This adds space between images */
+}
+
+.glider img:last-child {
+  margin-right: 0;
+}
+
+.image-captioned {
+  text-align: center;
+  margin: 2rem auto;
+}
+
+.image-captioned .caption {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 0.4rem;
+  text-align: center;
+}
+
+.hover-effect img {
+  max-width: 100%;
+  height: auto;
+  transition: transform 0.3s ease;
+  border-radius: 8px;
+}
+
+.hover-effect:hover img {
+  transform: scale(3);
+}

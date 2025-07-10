@@ -1,0 +1,20 @@
+title: Algorithmic String Art
+description: Roy Hachnochi
+remote_theme: pages-themes/cayman@v0.2.0
+plugins:
+- jekyll-remote-theme
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  math_engine: mathjax
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: default
+sass:
+  style: compressed
+include:
+  - assets/images/
+  - assets/images/inline/
