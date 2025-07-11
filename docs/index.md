@@ -1,3 +1,8 @@
+---
+layout: default
+title: Algorithmic String Art
+---
+
 <head>
   <link rel="stylesheet" href="assets/css/custom.css">
 </head>
