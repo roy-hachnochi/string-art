@@ -1,4 +1,5 @@
 from __future__ import annotations
+import sys
 from typing import TYPE_CHECKING, Optional, Tuple
 from abc import ABC, abstractmethod
 import os
@@ -77,7 +78,8 @@ class SaveGifCallback(IterationCallback):
         super(SaveGifCallback, self).__init__(period)
         self.path = path
         res = (resolution[1], resolution[0])
-        self.video_writer = cv2.VideoWriter(self.path, cv2.VideoWriter_fourcc(*"avc1"), fps, res)
+        codec = "mp4v" if "ipykernel" in sys.modules else "avc1"  # avc1 is better but isn't supported in notebooks
+        self.video_writer = cv2.VideoWriter(self.path, cv2.VideoWriter_fourcc(*codec), fps, res)
 
     def __call__(self, iteration: int, canvas: Canvas, lines: Optional[LINES_TYPE] = None):
         if (iteration + 1) % self.period == 0:
