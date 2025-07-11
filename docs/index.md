@@ -27,7 +27,7 @@ In this post I will try to deep dive into the full details of the project develo
 
 <div style="text-align: center;">
   <video autoplay muted playsinline preload="auto" style="max-width: 450px; height: auto; border-radius: 8px;">
-    <source src="/assets/images/inline/fish_MCBL_string_art.mp4" type="video/mp4">
+    <source src="{{ site.baseurl }}/assets/images/inline/fish_MCBL_string_art.mp4" type="video/mp4">
   </video>
 </div>
 
@@ -59,7 +59,7 @@ Where $$d(x,y;l)$$ is the distance between pixel $$(x,y)$$ and the line $$l$$, a
 Therefore, I turned to implement the lines with a library function. Specifically I found `skimage.draw.line_aa` to be the fastest implementation that supports antialiasing lines, which is important since the real-world strings aren't of constant intensity. This implementation also has the benefit of returning the image pixels which are included in the line, which will be important for efficient error calculation, since it will allow us to calculate the effect only on the relevant pixels.
 
 <div class="image-captioned">
-  <img src="/assets/images/inline/line_const_vs_AA.jpg" alt="lines" style="max-width:400px; display:block; margin:auto; border-radius:10px;">
+  <img src="{{ site.baseurl }}/assets/images/inline/line_const_vs_AA.jpg" alt="lines" style="max-width:400px; display:block; margin:auto; border-radius:10px;">
   <div class="caption">Left: Constant line. Right: Antialiasing line, better resembling real world threads.</div>
 </div>
 
@@ -71,7 +71,7 @@ At first glance, it might seem as though using the highest canvas resolution is 
 However, for the final rendering we *will* use a bigger resolution, to simulate the real-world appearance of opaque overlapping strings, which don't blend when looking up close. Using the same formula as above, we'll set the canvas resolution so that the string intensity will turn out as $$1$$.
 
 <div class="image-captioned">
-  <img src="/assets/images/inline/don_draper_full_vs_low_res.jpg" alt="canvas_res" style="max-width:500px; display:block; margin:auto; border-radius:10px;">
+  <img src="{{ site.baseurl }}/assets/images/inline/don_draper_full_vs_low_res.jpg" alt="canvas_res" style="max-width:500px; display:block; margin:auto; border-radius:10px;">
   <div class="caption">Left: High resolution canvas. Right: Using opaque strings on a low resolution canvas doesn't simulate the real world details.</div>
 </div>
 
@@ -95,7 +95,7 @@ $$
 > 2. Some might find it more intuitive to optimize the error directly: $$\min_l \quad e = \left\| y-(x+l)\right\|_2^2.$$ However, this is mathematically wrong, since what we really want is not to minimize the current error, but rather to perform gradient descent with respect to the added line, which is exactly what is represented in formula $$(1)$$.
 
 <div class="image-captioned">
-  <img src="/assets/images/inline/don_draper_greedy_string_art.jpg" alt="greedy" style="max-width:250px; display:block; margin:auto; border-radius:10px;">
+  <img src="{{ site.baseurl }}/assets/images/inline/don_draper_greedy_string_art.jpg" alt="greedy" style="max-width:250px; display:block; margin:auto; border-radius:10px;">
   <div class="caption">Greedy optimizer</div>
 </div>
 
@@ -119,7 +119,7 @@ We pre-calculate $$A$$ by using the canvas simulation for each possible nail pai
 Now that we have this representation of the problem as a linear equation, we may plug in various linear regressors. The problem here, is that the solution isn't restricted to being binary (and not even restricted to being positive!). We may approximate the binary solution by setting some threshold, above which the values of $$x$$ will become $$1$$, and under which they will become $$0$$.
 
 <div class="image-captioned">
-  <img src="/assets/images/inline/don_draper_LS.jpg" alt="LS" style="max-width:500px; display:block; margin:auto; border-radius:10px;">
+  <img src="{{ site.baseurl }}/assets/images/inline/don_draper_LS.jpg" alt="LS" style="max-width:500px; display:block; margin:auto; border-radius:10px;">
   <div class="caption">Left: Least Squares optimizer result. Right: After binarization.</div>
 </div>
 
@@ -164,7 +164,7 @@ $$
 Put in words, in each step we calculate equation $$(4)$$ for all lines, find the best one, and update the residual error $$r_k$$ after adding this line via equation $$(5)$$. If we implement these equations using sparse matrices and vectorized calculations, this process becomes **extremely fast**!
 
 <div class="image-captioned">
-  <img src="/assets/images/inline/don_draper_BL_string_art.jpg" alt="BL" style="max-width:250px; display:block; margin:auto; border-radius:10px;">
+  <img src="{{ site.baseurl }}/assets/images/inline/don_draper_BL_string_art.jpg" alt="BL" style="max-width:250px; display:block; margin:auto; border-radius:10px;">
   <div class="caption">Binary Linear optimizer</div>
 </div>
 
@@ -189,7 +189,7 @@ where $$\odot$$ means element-wise multiplication of each column of $$A$$ with $
 3. **Valid nails subset** - We may make the algorithm even faster by limiting the number of nails we allow in each step. First, we don't want a nail to connect to nails which are too close to it anyways, since the result will be perceptually insignificant. Second, we limit it even further by selecting a smaller *random* subset of nails in each step. This hardly affects the output, but significantly improves efficiency.
 
 <div class="image-captioned">
-  <img src="/assets/images/inline/don_draper_weights.jpg" alt="weights" style="max-width:500px; display:block; margin:auto; border-radius:10px;">
+  <img src="{{ site.baseurl }}/assets/images/inline/don_draper_weights.jpg" alt="weights" style="max-width:500px; display:block; margin:auto; border-radius:10px;">
   <div class="caption">Left: BL optimizer (no weights). Right: BL optimizer with weights, notice the enhanced details in the face and eyes.</div>
 </div>
 
@@ -201,7 +201,7 @@ So we now have a very decent monochrome algorithm to recreate String-Art images,
 Generalizing the monochrome algorithm to multicolor images is definitely not straight-forward. Given the subtractive nature of real-life colors, the naive method would be to apply the monochrome algorithm per channel, and render using CMYK (cyan, blue, magenta, black - the opposites of red, green, blue, white) threads. This works in theory and even in simulation, but when rendering with opaque strings it just completely fails.
 
 <div class="image-captioned">
-  <img src="/assets/images/inline/fish_CMYK.jpg" alt="fish_CMYK" style="max-width:500px; display:block; margin:auto; border-radius:10px;">
+  <img src="{{ site.baseurl }}/assets/images/inline/fish_CMYK.jpg" alt="fish_CMYK" style="max-width:500px; display:block; margin:auto; border-radius:10px;">
   <div class="caption">Optimizing CMYK channels separately. Left: Color subtraction simulation. Right: Real world opaque strings simulation.</div>
 </div>
 
@@ -220,7 +220,7 @@ After trying a few methods, and conducting some research, I came across this exc
 The key here is an image processing algorithm called Dithering, specifically [Floy-Steinberg dithering](https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering). It is the process of approximating an image with a small color-palette, based on the idea that the human eye blends nearby colors. For example, a chess-board image with alternating black and white pixels will, from far enough away, just look gray. The algorithm works by scanning the image pixel by pixel, approximating the nearest color from the palette for each pixel, and diffusing the estimation error to the surrounding pixels.
 
 <div class="image-captioned">
-  <img src="/assets/images/inline/dithering.jpg" alt="dithering" style="max-width:500px; display:block; margin:auto; border-radius:10px;">
+  <img src="{{ site.baseurl }}/assets/images/inline/dithering.jpg" alt="dithering" style="max-width:500px; display:block; margin:auto; border-radius:10px;">
   <div class="caption">Left: Original. Right: Dithered.</div>
 </div>
 
@@ -240,7 +240,7 @@ For the postprocessing part, I came up with two methods:
 Personally, I couldn't decide which one worked better, but we may point out the difference between the approaches: **Interweave** is more user *controllable*, and **Combine** is more *automatic* but can sometimes turn out worst.
 
 <div class="image-captioned">
-  <img src="/assets/images/inline/multicolor_BL_pipeline.jpg" alt="multicolor_pipeline" style="display:block; margin:auto; border-radius:10px;">
+  <img src="{{ site.baseurl }}/assets/images/inline/multicolor_BL_pipeline.jpg" alt="multicolor_pipeline" style="display:block; margin:auto; border-radius:10px;">
   <div class="caption">Multicolor optimizer pipeline</div>
 </div>
 
@@ -276,7 +276,7 @@ With these update equations, we apply the exact same greedy iteration algorithm 
 Finally, as in the previous approach, we assume that the more important lines are found earlier, so we flip the order in postprocessing.
 
 <div class="image-captioned">
-  <img src="/assets/images/inline/fish_MCBL_string_art.jpg" alt="fish_MCBL" style="max-width:300px; display:block; margin:auto; border-radius:10px;">
+  <img src="{{ site.baseurl }}/assets/images/inline/fish_MCBL_string_art.jpg" alt="fish_MCBL" style="max-width:300px; display:block; margin:auto; border-radius:10px;">
   <div class="caption">MCBL optimizer</div>
 </div>
 
@@ -305,7 +305,7 @@ $$
 And from here we just solve the same optimization problem as before, with the updated inputs.
 
 <div class="image-captioned">
-  <img src="/assets/images/inline/fish_MCBL_log.jpg" alt="fish_MCBL_log" style="max-width:500px; display:block; margin:auto; border-radius:10px;">
+  <img src="{{ site.baseurl }}/assets/images/inline/fish_MCBL_log.jpg" alt="fish_MCBL_log" style="max-width:500px; display:block; margin:auto; border-radius:10px;">
   <div class="caption">Left: MCBL optimization on regular additive space. Right: MCBL optimizer on CMY multiplicative space.</div>
 </div>
 
@@ -320,7 +320,7 @@ Seeing as my aim was to have the algorithm be as much plug-and-play as possible,
 I have a few ideas for other palette estimation methods, such as expanding option 2 to histogram-based approaches or expanding option 3 to use a finer color dictionary, but haven't gotten to trying them out yet.
 
 <div class="image-captioned">
-  <img src="/assets/images/inline/fish_color_selection.jpg" alt="fish_color_selection" style="max-width:800px; display:block; margin:auto; border-radius:10px;">
+  <img src="{{ site.baseurl }}/assets/images/inline/fish_color_selection.jpg" alt="fish_color_selection" style="max-width:800px; display:block; margin:auto; border-radius:10px;">
   <div class="caption">Left: Manual color selection. Middle: Color selection via clustering. Right: RGBCMYKW color selection.</div>
 </div>
 
@@ -344,43 +344,43 @@ Feel free to try the [Colab playground](https://colab.research.google.com/github
 ## Examples
 <div class="glider-contain">
   <div class="glider">
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/fish_MCBL_log_string_art.jpg" alt="fish"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/tiger_BL_string_art.jpg" alt="tiger"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/jellyfish_BL_string_art.jpg" alt="jellyfish"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/stag_MCBL_log_string_art.jpg" alt="stag"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/leopard_BL_string_art.jpg" alt="leopard"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/lion_MCBL_log_string_art.jpg" alt="lion"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/fish2_BL_string_art.jpg" alt="fish2"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/fox_BL_string_art.jpg" alt="fox"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/cat2_MCBL_log_string_art.jpg" alt="cat2"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/cat_BL_string_art.jpg" alt="cat"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/eye_BL_string_art.jpg" alt="eye"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/earth_BL_string_art.jpg" alt="earth"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/coraline_MCBL_string_art.jpg" alt="coraline"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/duck_BL_string_art.jpg" alt="duck"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/blade_runner_MCBL_string_art.jpg" alt="blade_runner"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/london_telephone_box_MCBL_log_string_art.jpg" alt="london_telephone_box"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/phoenix_BL_string_art.jpg" alt="phoenix"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/planets_MCBL_log_string_art.jpg" alt="planets"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/snake_MCBL_log_string_art.jpg" alt="snake"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/volcano_BL_string_art.jpg" alt="volcano"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/sauron_BL_string_art.jpg" alt="sauron"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/mona_lisa_MCBL_log_string_art.jpg" alt="mona_lisa"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/bee_MCBL_log_string_art.jpg" alt="bee"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/pink_floyd_BL_string_art.jpg" alt="pink_floyd"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/union_jack_MCBL_log_string_art.jpg" alt="union_jack"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/H_BL_string_art.jpg" alt="H"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/mona_lisa_BW_BL_string_art.jpg" alt="mona_lisa_BW"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/don_draper_BL_w_string_art.jpg" alt="don_draper"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/terminator_BL_string_art.jpg" alt="terminator"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/joker_BL_string_art.jpg" alt="joker"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/walter_white_BL_string_art.jpg" alt="walter_white"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/kill_bill_BL_string_art.jpg" alt="kill_bill"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/morrison_BL_string_art.jpg" alt="morrison"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/godfather_BL_string_art.jpg" alt="godfather"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/gatsby_BL_string_art.jpg" alt="gatsby"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/einstein_BL.jpg" alt="einstein"></div></div>
-    <div class="hover-effect"><div class="slide"><img src="/assets/images/pulp_fiction_BL_string_art.jpg" alt="pulp_fiction"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/fish_MCBL_log_string_art.jpg" alt="fish"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/tiger_BL_string_art.jpg" alt="tiger"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/jellyfish_BL_string_art.jpg" alt="jellyfish"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/stag_MCBL_log_string_art.jpg" alt="stag"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/leopard_BL_string_art.jpg" alt="leopard"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/lion_MCBL_log_string_art.jpg" alt="lion"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/fish2_BL_string_art.jpg" alt="fish2"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/fox_BL_string_art.jpg" alt="fox"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/cat2_MCBL_log_string_art.jpg" alt="cat2"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/cat_BL_string_art.jpg" alt="cat"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/eye_BL_string_art.jpg" alt="eye"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/earth_BL_string_art.jpg" alt="earth"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/coraline_MCBL_string_art.jpg" alt="coraline"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/duck_BL_string_art.jpg" alt="duck"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/blade_runner_MCBL_string_art.jpg" alt="blade_runner"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/london_telephone_box_MCBL_log_string_art.jpg" alt="london_telephone_box"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/phoenix_BL_string_art.jpg" alt="phoenix"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/planets_MCBL_log_string_art.jpg" alt="planets"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/snake_MCBL_log_string_art.jpg" alt="snake"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/volcano_BL_string_art.jpg" alt="volcano"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/sauron_BL_string_art.jpg" alt="sauron"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/mona_lisa_MCBL_log_string_art.jpg" alt="mona_lisa"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/bee_MCBL_log_string_art.jpg" alt="bee"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/pink_floyd_BL_string_art.jpg" alt="pink_floyd"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/union_jack_MCBL_log_string_art.jpg" alt="union_jack"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/H_BL_string_art.jpg" alt="H"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/mona_lisa_BW_BL_string_art.jpg" alt="mona_lisa_BW"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/don_draper_BL_w_string_art.jpg" alt="don_draper"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/terminator_BL_string_art.jpg" alt="terminator"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/joker_BL_string_art.jpg" alt="joker"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/walter_white_BL_string_art.jpg" alt="walter_white"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/kill_bill_BL_string_art.jpg" alt="kill_bill"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/morrison_BL_string_art.jpg" alt="morrison"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/godfather_BL_string_art.jpg" alt="godfather"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/gatsby_BL_string_art.jpg" alt="gatsby"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/einstein_BL.jpg" alt="einstein"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/pulp_fiction_BL_string_art.jpg" alt="pulp_fiction"></div></div>
   </div>
   <button class="glider-prev">«</button>
   <button class="glider-next">»</button>

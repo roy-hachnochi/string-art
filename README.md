@@ -1,4 +1,4 @@
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roy-hachnochi/string-art/blob/main/algorithmic_string_art_playground.ipynb)  
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/roy-hachnochi/string-art/blob/main/algorithmic_string_art_playground.ipynb)
 [![Github](https://img.shields.io/badge/GitHub-Project%20Page-green?logo=github)](https://roy-hachnochi.github.io/string-art/)
 
 # Algorithmic String Art
