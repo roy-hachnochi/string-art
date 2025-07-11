@@ -9,7 +9,7 @@ Based on the inspiringly creative work by Petros Vrellis: [A New Way to Knit (20
 [Colab](https://github.com/roy-hachnochi/string-art/blob/main/algorithmic_string_art_playground.ipynb) notebook playground to generate string-art images and instructions from your own images.  
 [Project Page](https://roy-hachnochi.github.io/string-art/) with detailed explanations and mathematical derivations of the algorithm and pipeline.
 
-![teaser](assets/images/fish_MCBL_string_art.gif)
+![teaser](docs/assets/images/fish_MCBL_string_art.gif)
 
 ## Setup
 1. Clone the repo:
