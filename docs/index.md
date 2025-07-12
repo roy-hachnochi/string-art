@@ -76,7 +76,7 @@ At first glance, it might seem as though using the highest canvas resolution is 
 However, for the final rendering we *will* use a bigger resolution, to simulate the real-world appearance of opaque overlapping strings, which don't blend when looking up close. Using the same formula as above, we'll set the canvas resolution so that the string intensity will turn out as $$1$$.
 
 <div class="image-captioned">
-  <img src="{{ site.baseurl }}/assets/images/inline/don_draper_full_vs_low_res.jpg" alt="canvas_res" width=100%; style="max-width:500px; display:block; margin:auto; border-radius:10px;">
+  <img src="{{ site.baseurl }}/assets/images/inline/don_draper_full_vs_low_res.jpg" alt="canvas_res" style="width=100%; max-width:500px; display:block; margin:auto; border-radius:10px;">
   <div class="caption">Left: High resolution canvas. Right: Using opaque strings on a low resolution canvas doesn't simulate the real world details.</div>
 </div>
 
