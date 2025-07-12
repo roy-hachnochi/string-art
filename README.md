@@ -108,7 +108,7 @@ If neither `--colors` nor `--rgbcmykw` are given, the algorithm will use cluster
 
 #### Advanced params
 - `--error_threshold` - Sufficient error threshold to halt during optimization.
-- `--noncontinuous` - Without this flag, each line will be forced to start from the second nail of the previous line, to form a continuous path. This flag disables enforcing a continuous path.(Not recommended)
+- `--noncontinuous` - Without this flag, each line will be forced to start from the second nail of the previous line, to form a continuous path. This flag disables enforcing a continuous path. (Not recommended)
 - `--n_random_nails` - Limit connections to random subset of nails each iteration. Used mainly for speedup. (Recommended: 150)
 - `--threshold` - Threshold for setting fiber values in least squares optimizer.
 - `--simulate_combine` - The default method for interweaving colors is by a fixed interval (e.g., 25% of color #1, 25% of color #2, 25% of color #3, and again 25% of color #1, and so on). This flag tries another combination method, by choosing the best color to add each step based on error simulation (assuming that lines which decrease the error the most should be on top). Valid only when not using multicolor_binary_linear optimizer.
