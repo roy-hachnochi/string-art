@@ -54,7 +54,7 @@ def main():
     bg_color = '#ffffff'
     n_fibers = '10000'
     interval = '0.1'
-    config = 'multicolor_config'  # 'multicolor_config'/'bw_config'
+    cfg = 'multicolor_config'  # 'multicolor_config'/'bw_config'
 
     for image in params:
         sys.argv = [
@@ -63,15 +63,15 @@ def main():
             # '--weights', 'images/planets_w.png',
             '--result', f'results/{image}',
             '--name', f'{image}_{name}',
-            '--config', config,
+            '--config', cfg,
             # '--shape', 'ellipse',
             '--fiber_width', '0.12',
             '--canvas_size'] + [str(s) for s in params[image]['canvas_size']] + [
             # '--optimization_resolution', '525', '900',
             '--bg_color', bg_color,
             '--n_fibers', n_fibers,
-            # '--rgbcmykw',
-            # '--n_colors', '4',
+            '--palette_type', 'histogram_and_patches',
+            '--n_colors', str(len(params[image]['colors'])),
             '--colors'] + params[image]['colors'] + [
             '--nails', '360',
             '--optimizer_type', optimizer,

@@ -11,7 +11,7 @@ from string_art.canvas import Canvas, MulticolorCanvas
 from string_art.optimizers import optimizer_factory, FibersPath
 from string_art.utils import (SaveCanvasCallback, SaveCanvasMulticolorCallback, SaveGifCallback, parse_args,
                               init_config, save_image, load_image)
-from string_art.utils.visualizations import visualize_color_images
+from string_art.utils.visualizations import visualize_color_images, print_with_colorbar, COLORBAR_PLACEHOLDER
 from string_art.globals import DebugFilenames, LINES_TYPE, COLOR_LINES_TYPE, COLOR_TYPE
 
 
@@ -70,6 +70,9 @@ def run_preprocess(
     print(f'Preprocess time: {preprocess_time:.2f}')
     if config.optimizer.multicolor:
         color_images, dithered = preprocessed
+        print('Selected color palette:')
+        for c in color_images:
+            print_with_colorbar(f'{COLORBAR_PLACEHOLDER}', c)
         save_image(dithered, os.path.join(result_dir, name + DebugFilenames.DITHERED))
         visualize_color_images(color_images, os.path.join(result_dir, name + DebugFilenames.COLOR_IMAGES))
     else:

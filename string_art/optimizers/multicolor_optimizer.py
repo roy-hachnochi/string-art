@@ -34,7 +34,7 @@ class MulticolorOptimizer(BaseOptimizer):
             aspect_ratio=aspect_ratio,
             grayscale=False,
             colors=self.preprocess_cfg.colors,
-            rgbcmykw=self.preprocess_cfg.rgbcmykw,
+            palette_type=self.preprocess_cfg.palette_type,
             n_colors=self.preprocess_cfg.n_colors,
             bg_color=self.canvas_cfg.bg_color,
         )

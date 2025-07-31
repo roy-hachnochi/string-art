@@ -19,6 +19,14 @@ class OptimizerType(Enum):
     NEURAL_NETWORK = 'NN'  # TODO: implement
 
 
+class PaletteType(Enum):
+    RGBCMYKW = 'rgbcmykw'
+    PATCHES_SIMULATION = 'patches'
+    HISTOGRAM = 'histogram'
+    HISTOGRAM_AND_SIMULATION = 'histogram_and_patches'
+    CLUSTERING = 'clustering'
+
+
 @dataclass
 class CanvasConfig:
     size: Tuple[int, int]  # real canvas size (h, w) [millimeters]
@@ -68,14 +76,31 @@ class CanvasConfig:
 
 @dataclass
 class PreprocessConfig:
-    # see preprocessing:preprocess_image for more details
     resolution: Optional[Tuple[int, int]] = None  # resize image to this resolution
 
     # for multicolor images
     colors: Optional[ndarray] = None  # manual palette for dithering
-    rgbcmykw: bool = False  # use RGBCMYK subset as palette for dithering
-    # if not given colors or rgbcmykw, will estimate a palette based on the image itself
+    palette_type: Optional[PaletteType] = PaletteType.HISTOGRAM_AND_SIMULATION  # palette selection method (if not provided manual palette)
     n_colors: int = 4  # number of colors to use for dithering palette
+
+    def __post_init__(self):
+        self._update_palette_type()
+        assert not (self.colors is None and self.palette_type is None), \
+            ('No palette provided. Either set colors for manual palette, or set palette_type for automatic palette '
+             'calculation method.')
+
+    def _update_palette_type(self):
+        if isinstance(self.palette_type, str):
+            try:
+                self.palette_type = next(s for s in PaletteType if s.value == self.palette_type)
+            except StopIteration:
+                if self.colors is None:
+                    print(f'\'{self.palette_type}\' is not a valid value for palette_type, see class PaletteType.')
+
+    def __setattr__(self, key, value):
+        super().__setattr__(key, value)
+        if key == 'palette_type':
+            self._update_palette_type()
 
 
 @dataclass

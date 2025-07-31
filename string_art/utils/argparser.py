@@ -3,7 +3,8 @@ from dataclasses import is_dataclass
 
 import numpy as np
 
-from string_art.configs import CanvasConfig, OptimizerConfig, PreprocessConfig, Config, Shape, OptimizerType, get_config
+from string_art.configs import CanvasConfig, OptimizerConfig, PreprocessConfig, Config, Shape, OptimizerType, \
+    PaletteType, get_config
 from string_art.utils import hex2rgb
 
 def parse_args():
@@ -33,7 +34,7 @@ def parse_args():
     # PreprocessConfig arguments
     parser.add_argument('--optimization_resolution', type=int, nargs=2, help='Optimization canvas resolution (h, w)')
     parser.add_argument('--colors', type=str, nargs='+', help="Manual palette, list of HEX colors of colors to use")
-    parser.add_argument('--rgbcmykw', action='store_const', const=True, default=None, help='Use RGBCMYKW subset as palette')
+    parser.add_argument('--palette_type', type=str, choices=[s.value for s in PaletteType], help=f'Type of optimizer to use ({"/".join([o.value for o in PaletteType])})')
     parser.add_argument('--n_colors', type=int, default=4, help='Number of colors to use for dithering palette')
 
     # OptimizerConfig arguments

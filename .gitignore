@@ -167,5 +167,6 @@ matrix_cache/
 *.pptx
 results/
 results/*/
+debug/
 docs/_site/
 String_Art_Radon_Transform*/

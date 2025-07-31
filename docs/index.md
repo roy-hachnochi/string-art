@@ -317,23 +317,37 @@ And from here we just solve the same optimization problem as before, with the up
 ### Finding the Color Palette
 We have just one last problem left to solve. Both methods heavily rely on choosing the correct color palette to approximate the image. From my experience, the algorithm is very sensitive to the chosen colors, and choosing even a slightly off palette will significantly degrade the results for most images. It's therefore very important to choose the best color palette in the preprocessing/initialization step.
 
-Seeing as my aim was to have the algorithm be as much plug-and-play as possible, I tried three approaches, varying in levels of automaticity.
+Seeing as my aim was to have the algorithm be as much plug-and-play as possible, I gave a shot at a few different approaches, varying in levels of automaticity. I'll lay out my trials process approximately as it was.
 1. **Manual color palette** - The least automatic method, just receive a palette defined by the user. This has the best potential of being the most accurate, but finding the exact right palette may be hard and tiresome.
-2. **Clustering-based palette** - Run a clustering algorithm (such as KMeans or Median-Cut) on the image pixels to choose the $$k$$ most dominant colors. This is the most automatic method, but unfortunately didn't work for most images since these algorithms tend to find average centers for clusters, and not the most common ones.
-3. **RGBCMYKW-based palette** - Take a subset of $$k$$ colors between the 8 "corner" colors (red, green, blue, cyan, magenta, yellow, black, white). How do we choose the $$k$$ colors? We test all possible $$\binom{8}{k}$$ color combinations by dithering a few small windows of the image (thus making the search quick although it's brute-force). Note that with this method, we could also define a different color dictionary instead of RGBCMYKW.
+2. **Clustering-based palette** - Run a clustering algorithm (such as KMeans or Median-Cut) on the image pixels to choose the $$k$$ most dominant colors. This is the most automatic method, as it has no need for a predefined color dictionary, but unfortunately didn't work for most images, since clustering algorithms tend to find average centers for clusters, and not the most common ones.
+3. **Histogram-based palette** - First define a fairly small (~$$25$$ colors) but highly representative color dictionary. Now we calculate a discrete histogram on the image pixels with this dictionary. An important addition here is to smooth the histogram, so that different shades of the same color (or perceptually similar colors) will also be accounted for. This method unfortunately resulted in picking different shades of the same color over other, more important, colors, since colors with a very high representation (e.g., background) also increased their neighbor's histogram value.
+4. **Dithering simulation on patches** - Seeing as our target is to use this palette for dithering, we could define the dithering error as our target function for the palette selection. The problem here is that we don't want to dither the entire image for all possible color combinations, this would be very inefficient. Instead, we could randomly select a few small patches, dither them, calculate the dithering error vs. the original patches, and choose the palette which resulted in the overall lowest average error. This makes the search fairly quick although it's brute-force.  
+    4.1 **RGBCMYKW** - Use the 8 "corner" colors (red, green, blue, cyan, magenta, yellow, black, white) as our color dictionary, resulting in $$\binom{8}{k}$$ color combinations.  
+    4.2 **Color dictionary** - Use the representative color dictionary we defined for the histogram method. This has much more color combination possibilities ($$\binom{24}{k}$$), making it much slower in practice, but much more accurate.
 
-I have a few ideas for other palette estimation methods, such as expanding option 2 to histogram-based approaches or expanding option 3 to use a finer color dictionary, but haven't gotten to trying them out yet.
+Finally, the method I arrived at was to take the "best of all worlds":
+1. Define a representative color dictionary.
+2. Resize the image to be $$512 \times 512$$ max, for efficiency.
+3. Calculate $$10$$ most common colors in smoothed histogram (very quick), reducing the color dictionary size for the next step.
+4. Simulate dithering error on small patches for all color combinations on the reduced color dictionary, and take the best one (much quicker than checking all combinations from the original dictionary).
+
+** In all steps, we fix black and white to the palette, since these provide the main details in the image.
 
 <div class="image-captioned">
-  <img src="{{ site.baseurl }}/assets/images/inline/fish_color_selection.jpg" alt="fish_color_selection" style="width=100%; max-width:800px; display:block; margin:auto; border-radius:10px;">
-  <div class="caption">Left: Manual color selection. Middle: Color selection via clustering. Right: RGBCMYKW color selection.</div>
+  <img src="{{ site.baseurl }}/assets/images/inline/palette_selection.jpg" alt="palette_selection_pipeline" style="display:block; margin:auto; border-radius:10px;">
+  <div class="caption">Palette selection pipeline</div>
+</div>
+
+<div class="image-captioned">
+  <img src="{{ site.baseurl }}/assets/images/inline/fish_color_selection.jpg" alt="fish_color_selection" style="width=100%; max-width:1000px; display:block; margin:auto; border-radius:10px;">
+  <div class="caption">Left to right: manual, clustering-based, RGBCMYKW patches dithering simulation, histogram-based, histogram + patches dithering simulation.</div>
 </div>
 
 ---
 
 ## Future Work
 I'm winding down the work on this project for now, but here are a few directions I would love to explore in the future.
-- **Better palette estimation method** - Having the algorithms success heavily rely on this part, I find it the most urgent step of the algorithm to improve. Maybe a histogram-based method would work here.
+- ~~**Better palette estimation method** - Having the algorithms success heavily rely on this part, I find it the most urgent step of the algorithm to improve. Maybe a histogram-based method would work here.~~
 - **Better thread combination method** - The two proposed methods (interweave and combine) work pretty fine, but I do believe that better results can be achieved here. The *important = last* approach might also be suboptimal.
 - **Deep Learning NN based algorithm** - Having a lot of background in the field of Deep Learning, as this is what I do in my day-job, I would really like to formalize the problem and solution as a neural network learning/optimization problem and give it a go sometime.
 - **Better Robustness** - The aim of this project was for the algorithm to work automatically on _any_ image. This was only partially achieved as, from my experience, the algorithm works better on single or double color palette images, and finds it harder to achieve good results on full color images. This leads me to...

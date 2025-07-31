@@ -1,4 +1,5 @@
-from string_art.configs.base_config import Config, CanvasConfig, PreprocessConfig, OptimizerConfig, Shape, OptimizerType
+from string_art.configs.base_config import (Config, CanvasConfig, PreprocessConfig, OptimizerConfig, Shape,
+                                            OptimizerType, PaletteType)
 
 
 MULTICOLOR_CONFIG = Config(
@@ -14,7 +15,7 @@ MULTICOLOR_CONFIG = Config(
     preprocess=PreprocessConfig(
         resolution=None,
         colors=None,
-        rgbcmykw=False,
+        palette_type=PaletteType.HISTOGRAM_AND_SIMULATION,
         n_colors=4,
         ),
     optimizer=OptimizerConfig(

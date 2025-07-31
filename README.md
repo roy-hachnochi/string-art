@@ -92,7 +92,12 @@ Open each cell to see related arguments.
 
 - `--optimization_resolution` - Optional optimization canvas resolution (h, w). Use when image is too big, to resize to around (900, 900).
 - `--colors` - Manual palette, list of HEX colors of fibers to use.
-- `--rgbcmykw` - Use RGBCMYKW subset as palette.
+- `--palette` - Palette calculation method, if manual `colors` not provided:  
+  - `rgbcmykw` - Choose the best palette from RGBCMYKW color dictionary.
+  - `patches` - Choose the best palette from a predefined COLOR_DICT, by calculating dithering error on small image patches (slower).
+  - `histogram` - Choose palette based on image histogram (**not recommended**).
+  - `histogram_and_patches` - Use histogram method to reduce COLOR_DICT for better efficiency, then use patches simulation method to choose the best palette.
+  - `clustering` - Calculate palette via color clustering methods (**not recommended**).
 - `--n_colors` - Number of colors to use for dithering palette.
 If neither `--colors` nor `--rgbcmykw` are given, the algorithm will use clustering methods to estimate a palette of fiber colors, which is not recommended as it often results in poor recreation.
 
