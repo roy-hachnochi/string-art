@@ -76,7 +76,7 @@ def run_preprocess(
         save_image(dithered, os.path.join(result_dir, name + DebugFilenames.DITHERED))
         visualize_color_images(color_images, os.path.join(result_dir, name + DebugFilenames.COLOR_IMAGES))
     else:
-        save_image(preprocessed, os.path.join(result_dir, name + 'preprocessed.jpg'))
+        save_image(preprocessed[0], os.path.join(result_dir, name + 'preprocessed.jpg'))
 
 
 def run_postprocess(
