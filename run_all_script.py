@@ -33,6 +33,7 @@ def main():
         'tiger': {'canvas_size': (600, 475), 'colors': ['#ffffff`', '#ff8200', '#ff0000', '#000000']},
         'union_jack': {'canvas_size': (600, 600), 'colors': ['#ffffff', '#ff0000', '#0078f0', '#000000']},
         'volcano': {'canvas_size': (400, 600), 'colors': ['#ffffff', '#ff2000', '#ffff00', '#000000']},
+        'tommy': {'canvas_size': (600, 600), 'colors': ['#5C8FA3', '#AFD0D5', '#A68E6E', '#E1D3B9', '#000000']},
     }
 
     # params = [

@@ -26,14 +26,21 @@ title: Algorithmic String Art
 
 # Algorithmic String Art
 
-This is the project page for a personal weekend project, aimed at using computational optimization to recreate images by connecting strings through nails. The idea is inspired by the creatively brilliant work of Petros Vrellis: [A New Way to Knit (2016)](https://artof01.com/vrellis/works/knit.html). My vision was to make the algorithm as robust and automatic as possible, and although I can't say this was fully achieved, I did learn a lot along the way, and there are still plenty more interesting ideas to implement towards this goal.
-
-In this post I will try to deep dive into the full details of the project development process and thought process, including failed ideas, efficiency considerations, and carefully deriving the mathematical formulas required to solve this problem.
-
 <div style="text-align: center;">
   <video autoplay muted playsinline preload="auto" style="width=100%; max-width: 450px; height: auto; border-radius: 8px;">
     <source src="{{ site.baseurl }}/assets/images/inline/fish_MCBL_string_art.mp4" type="video/mp4">
   </video>
+</div>
+
+String Art is a decorative craft where threads are stretched and woven across a set of fixed points on the perimeter of a canvas, gradually building up intricate patterns and images. What might appear at first as a purely artistic pursuit is deeply connected to mathematics: each line is chosen with precision, and together they approximate shapes, textures, and even photorealistic portraits. This interplay between art and algorithm was beautifully demonstrated in [A New Way to Knit (2016)](https://artof01.com/vrellis/works/knit.html) by Petros Vrellis, whose pioneering work showed how a simple thread, looped thousands of times, can reconstruct an image with both elegance and surprising fidelity.
+
+I took on myself a weekend project to explore this line of work, and try to create my own String Art algorithm. My vision was to make the algorithm as robust and automatic as possible, and although I can't say this was fully achieved, I did learn a lot along the way, and there are still plenty more interesting ideas to implement towards this goal.
+
+In this post I will try to deep dive into the full details of the project development process and thought process, including failed ideas, efficiency considerations, and carefully deriving the mathematical formulas required to solve this problem.
+
+<div class="image-captioned">
+  <img src="{{ site.baseurl }}/assets/images/inline/el_greco.jpg" alt="lines" style="width=100%; max-width:800px; display:block; margin:auto; border-radius:10px;">
+  <div class="caption">Various close-up levels of one of Petros Vrellis' original works - El Greco's Christ, courtesy of his website.</div>
 </div>
 
 **[Setup and Simulation Model](#setup-and-simulation-model)**  
@@ -71,13 +78,13 @@ Therefore, I turned to implement the lines with a library function. Specifically
 ### Canvas simulation
 At first glance, it might seem as though using the highest canvas resolution is the best choice, but in practice using a smaller image size (around $$600\times600-900\times900$$) is better. This has two main advantages:  
 1. **Line simulation time** - The less pixels there are to calculate, the less time it takes.
-2. **Color blending** - Using a low resolution means that a string takes less than a pixel (accurately, a string's intensity through a pixel will be: $$I = width \cdot \frac{canvas\;resolution}{canvas\;size}$$). We haven't gotten to the colored version of the work, but having $$I<<1$$ will come in handy when simulating color blending of different color strings passing through the same pixel, which closely approximates how the human eye perceives colors.
+2. **Color blending** - Using a low resolution means that a string takes less than a pixel (accurately, a string's intensity through a pixel will be: $$I = string\;width\;[mm] \cdot \frac{canvas\;resolution\;[pixels]}{canvas\;size\;[mm]}$$). We haven't gotten to the colored version of the work, but having $$I<<1$$ will come in handy when simulating color blending of different color strings passing through the same pixel, which closely approximates how the human eye perceives colors.
 
-However, for the final rendering we *will* use a bigger resolution, to simulate the real-world appearance of opaque overlapping strings, which don't blend when looking up close. Using the same formula as above, we'll set the canvas resolution so that the string intensity will turn out as $$1$$.
+However, for the final rendering we *will* use a bigger resolution, to simulate the real-world appearance of opaque overlapping strings, which don't blend when looking up close. Using the same formula as above, we'll set the canvas resolution so that the string intensity will turn out as $$1$$ pixel.
 
 <div class="image-captioned">
   <img src="{{ site.baseurl }}/assets/images/inline/don_draper_full_vs_low_res.jpg" alt="canvas_res" style="width=100%; max-width:500px; display:block; margin:auto; border-radius:10px;">
-  <div class="caption">Left: High resolution canvas. Right: Using opaque strings on a low resolution canvas doesn't simulate the real world details.</div>
+  <div class="caption">Left: High resolution canvas. Right: Using opaque strings on a low-resolution canvas doesn't simulate the real world details.</div>
 </div>
 
 ---
@@ -92,12 +99,26 @@ Solving the black-and-white case is the core challenge. Multicolor optimization 
 Although I called it "naive" due to it being the first method which comes to mind, it actually works surprisingly well! The greedy method works by minimizing the error for the current step only, and continuing from there. For our problem, this means that for each step we want to find the best line to add, i.e. the one which improves (minimizes) the error by the biggest factor. Putting this in mathematical terms, let $$x$$ be the current String-Art result, $$y$$ be the original image, and $$l$$ be an image representing the line being checked, we want:  
 
 $$
-\min_l \quad \nabla_l e = \left\| y-(x+l)\right\|_2^2 - \left\| y-x\right\|_2^2 \tag{1}
+\min_l \quad e \left( l \right) = \left\| y-(x+l)\right\|_2^2
 $$
 
-> #### Two small notes
-> 1. In practice, we calculate this only over the affected pixels, and not the entire image, for better efficiency.
-> 2. Some might find it more intuitive to optimize the error directly: $$\min_l \quad e = \left\| y-(x+l)\right\|_2^2.$$ However, this is mathematically wrong, since what we really want is not to minimize the current error, but rather to perform gradient descent with respect to the added line, which is exactly what is represented in formula $$(1)$$.
+To make calculations a bit more efficient, we may subtract the previous error, which doesn't effect the minimization because it doesn't depend on $$l$$:
+
+<div style="font-size:80%">
+$$
+\begin{align*}
+\min_l \quad e \left( l \right) &= \left\| y-(x+l)\right\|_2^2 - \left\| y-x\right\|_2^2 \tag{1} \\
+&= \sum_{i} \left( y_i - \left( x_i + l_i \right) \right)^2 - \sum_{i} \left( y_i - x_i \right)^2 \\
+&= \sum_{i \in \mathrm{supp}\{l\}} \left( y_i - \left( x_i + l_i \right) \right)^2 + \bcancel{\sum_{i \notin \mathrm{supp}\{l\}} \left( y_i - \left( x_i + \cancelto{0}{l_i} \right) \right)^2} - \sum_{i \in \mathrm{supp}\{l\}} \left( y_i - x_i \right)^2 + \bcancel{\sum_{i \notin \mathrm{supp}\{l\}} \left( y_i - x_i \right)^2} \\
+&= \sum_{i \in \mathrm{supp}\{l\}} \left( y_i - \left( x_i + l_i \right) \right)^2 - \sum_{i \in \mathrm{supp}\{l\}} \left( y_i - x_i \right)^2
+\end{align*}
+$$
+</div>
+
+This allows us to efficiently calculate the error improvement only along the nonzero pixels of the line $$l$$.
+
+> #### A small note
+> Some might find it more intuitive to optimize the error along the line directly: $$e \left( l \right) = \sum_{i \in \mathrm{supp}\{l\}} \left( y_i - \left( x_i + l_i \right) \right)^2$$. However, if we expand the terms we get: $$e \left( l \right) = \sum_{i \in \mathrm{supp}\{l\}} \left( y_i - x_i \right)^2 - l_i \left( y_i - x_i \right) + l_i^2$$. The leftmost element of this equation is the previous error, so this term adds a penalty to choosing lines which had a high previous error, which is exactly the opposite of what we want!
 
 <div class="image-captioned">
   <img src="{{ site.baseurl }}/assets/images/inline/don_draper_greedy_string_art.jpg" alt="greedy" style="width=100%; max-width:250px; display:block; margin:auto; border-radius:10px;">
@@ -105,7 +126,7 @@ $$
 </div>
 
 ### Linear optimizer
-I love rigorously formulating problems as optimization problems. I find it to be one of the most elegant ways to apply the full power of mathematics, and once we succeed in doing so, a vast range of optimization algorithms are suddenly added to our toolbox. So naturally, this is what I wanted to do for our String-Art problem. The go-to approach would be a linear model.
+I love rigorously formulating problems as optimization problems. I find it to be one of the most elegant ways to apply the full power of mathematics, and once we succeed in doing so, a vast range of optimization algorithms are suddenly added to our toolbox. So naturally, this is what I wanted to do for our String-Art problem. The go-to approach would be a linear model. It's important to note that modelling the problem as a linear equation is an **approximation** (since in real world overlapping strings don't add up, but just hide eachother), but it's an approximation that works and helps as a relaxation of the problem to a solvable one.
 
 $$
 \min_x \quad \left\| Ax-b \right\|_2^2  \tag{2}
@@ -119,7 +140,7 @@ Where we have:
 We pre-calculate $$A$$ by using the canvas simulation for each possible nail pair, flattening the result, and stacking them as columns in the matrix.
 
 > #### A note about efficiency
-> The matrix $$A$$ is a very big one, and therefore consumes a lot of memory, and calculations involving it are time-consuming. However, we may notice that most of it's values are zeros (only the pixels related to the specific line in each column are nonzero), and choose to represent it as a **sparse** matrix, vastly improving both time and memory efficiency.
+> The matrix $$A$$ is a very big one, and therefore consumes a lot of memory, and calculations involving it are time-consuming. However, we may notice that most of it's values are zeros (only the pixels related to the specific line in each column are nonzero), and choose to represent it as a **sparse** matrix (e.g., using `scipy.sparse`) , vastly improving both time and memory efficiency.
 
 Now that we have this representation of the problem as a linear equation, we may plug in various linear regressors. The problem here, is that the solution isn't restricted to being binary (and not even restricted to being positive!). We may approximate the binary solution by setting some threshold, above which the values of $$x$$ will become $$1$$, and under which they will become $$0$$.
 
@@ -128,20 +149,20 @@ Now that we have this representation of the problem as a linear equation, we may
   <div class="caption">Left: Least Squares optimizer result. Right: After binarization.</div>
 </div>
 
-Unsurprisingly, although the optimizer solution was precise, the approximation is far from good, since the binarization process causes a divergence too big from the original non-binary solution.
+Unsurprisingly, although the optimizer solution was near-perfect, the approximation is far from good, since the binarization process causes a divergence too big from the original non-binary solution.
 
 So using Least-Squares optimization fails, but can this formulation help us develop something better, with just a little bit of hard work?
 
 ### Binary Linear optimizer
 
-Let's try to combine the success of the greedy approach with the rigorous formulation of the linear model. What we want is a per-step update formula, derived from the minimization problem from equation $$(2)$$.
+Let's try to combine the success of the greedy approach with the formulation of the linear model. What we want is a per-step update formula, derived from the minimization problem from equation $$(2)$$.
 
 $$
 \begin{align*}
-e_{k+1} (l) &= \left\| A \left( x_k + I_l \right) - b \right\|_2^2  \tag{3} \\
-&= \left\| \left( A x_k - b \right) + A I_l \right\|_2^2 \\
-&= \left\| \left( A x_k - b \right) \right\|_2^2 + 2 \left( A x_k - b \right) \cdot A I_l + \left\| A I_l \right\|_2^2 \\
-&= e_k + 2r_k \cdot A_l + \left\| A_l \right\|_2^2 \\
+e_{k+1} (l) &= \left\| A \left( x_k + \delta_l \right) - b \right\|_2^2  \tag{3} \\
+&= \left\| \left( A x_k - b \right) + A \delta_l \right\|_2^2 \\
+&= \left\| \left( A x_k - b \right) \right\|_2^2 + 2 \left( A x_k - b \right) \cdot A \delta_l + \left\| A \delta_l \right\|_2^2 \\
+&= e_k + 2r_k \cdot A_{*l} + \left\| A_{*l} \right\|_2^2 \\
 \end{align*}
 $$
 
@@ -150,20 +171,20 @@ Where we defined:
 $$
 \begin{align*}
 r_{k+1} (l) &= A x_{k+1} - b \\
-&= A \left( x_k + I_{l_{k+1}} \right) - b \\
-&= \left( A x_k - b \right) + A I_{l_{k+1}} \\
-&= r_k + A_{l_{k+1}} \\
+&= A \left( x_k + \delta_{l_{k+1}} \right) - b \\
+&= \left( A x_k - b \right) + A \delta_{l_{k+1}} \\
+&= r_k + A_{*l_{k+1}} \\
 \end{align*}
 $$
 
-Such that $$l_{k+1}$$ is the next line number added to the solution, $$I_l \in \left\{ 0,1 \right\}^{n}$$ is a one-hot vector with $$1$$ in the index $$l$$, and $$A_l \in \left[ 0,1 \right]^{hw}$$ is the $$l$$-th column of $$A$$. And so, we arrive at a straight-forward update rule:
+Such that $$l_{k+1}$$ is the next line number added to the solution, $$\delta_l \in \left\{ 0,1 \right\}^{n}$$ is a one-hot vector with $$1$$ in the index $$l$$, and $$A_{*l} \in \left[ 0,1 \right]^{hw}$$ is the $$l$$-th column of $$A$$. And so, we arrive at a straight-forward update rule:
 
 $$
-l_{k+1} = \arg\min_l \left\{ e_{k+1} (l) = e_k + 2r_k^T A_l + \left\| A_l \right\|_2^2 \right\}  \tag{4}
+l_{k+1} = \arg\min_l \left\{ e_{k+1} (l) = e_k + 2r_k^T A_{*l} + \left\| A_{*l} \right\|_2^2 \right\}  \tag{4}
 $$
 
 $$
-r_{k+1} = r_k + A_{l_{k+1}} \tag{5}
+r_{k+1} = r_k + A_{*l_{k+1}} \tag{5}
 $$
 
 Put in words, in each step we calculate equation $$(4)$$ for all lines, find the best one, and update the residual error $$r_k$$ after adding this line via equation $$(5)$$. If we implement these equations using sparse matrices and vectorized calculations, this process becomes **extremely fast**!
@@ -207,11 +228,11 @@ Generalizing the monochrome algorithm to multicolor images is definitely not str
 
 <div class="image-captioned">
   <img src="{{ site.baseurl }}/assets/images/inline/fish_CMYK.jpg" alt="fish_CMYK" style="width=100%; max-width:500px; display:block; margin:auto; border-radius:10px;">
-  <div class="caption">Optimizing CMYK channels separately. Left: Color subtraction simulation. Right: Real world opaque strings simulation.</div>
+  <div class="caption">Optimizing CMYK channels separately. Left: Color subtraction simulation. Right: "Real world" simulation with opaque strings.</div>
 </div>
 
 > #### A note about color theory
-> I chose to model color blending in the straight-forward method - by simple addition in RGB space, but this is certainly not the most accurate color blending model there is. Our perception of colors (and color blending) is much more complicated, and modelling a correct color space is key for success of the multicolor algorithm. LAB for example, is considered a perceptual color space much more similar to how the human eye works.
+> I chose to model color blending in the straight-forward method - by simple addition in RGB space, but this is certainly not the most accurate color blending model there is. Our perception of colors (and color blending) is much more complicated, and modelling a correct color space is key for success of the multicolor algorithm. LAB for example, is considered a perceptual color space much more similar to the way the human eye works.
 
 In algorithms study, there are usually two main approaches to extend an algorithm to a broader/harder case:
 1. **Reduction** - Taking the harder problem and breaking it into smaller, more manageable parts which we may already have the solution to.
@@ -219,10 +240,10 @@ In algorithms study, there are usually two main approaches to extend an algorith
 
 With this in mind, I'll break down how each approach leads us to different algorithms, both based on the monochrome algorithm which we already have.
 
-### Reduction - Dithering + Monochrome Optimizer
+### Reduction - dithering + monochrome optimizer
 After trying a few methods, and conducting some research, I came across this excellent [blogpost](https://www.perfectlynormal.co.uk/blog-computational-thread-art) by Callum Mcdougal, who made a very similar project (and from whom I borrowed most of my example images displayed here). He proposed a very interesting idea, which I had been circling around myself in my trials.
 
-The key here is an image processing algorithm called Dithering, specifically [Floy-Steinberg dithering](https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering). It is the process of approximating an image with a small color-palette, based on the idea that the human eye blends nearby colors. For example, a chess-board image with alternating black and white pixels will, from far enough away, just look gray. The algorithm works by scanning the image pixel by pixel, approximating the nearest color from the palette for each pixel, and diffusing the estimation error to the surrounding pixels.
+The key here is an image processing algorithm called Dithering, specifically [Floyd-Steinberg dithering](https://en.wikipedia.org/wiki/Floyd%E2%80%93Steinberg_dithering). It is the process of approximating an image with a small color-palette, based on the idea that the human eye blends nearby colors. For example, a chess-board image with alternating black and white pixels will, from far enough away, just look gray. The algorithm works by scanning the image pixel by pixel, approximating the nearest color from the palette for each pixel, and diffusing the estimation error to the surrounding pixels.
 
 <div class="image-captioned">
   <img src="{{ site.baseurl }}/assets/images/inline/dithering.jpg" alt="dithering" style="width=100%; max-width:500px; display:block; margin:auto; border-radius:10px;">
@@ -249,34 +270,36 @@ Personally, I couldn't decide which one worked better, but we may point out the 
   <div class="caption">Multicolor optimizer pipeline</div>
 </div>
 
+The nice thing about this method, is that it's agnostic to the monochrome optimization algorithm being used in the per-color part. Any String-Art algorithm that works on monochrome images may be plugged in here and be expanded to work on multicolor images.
+
 ### Generalization - Multicolor Binary Linear optimizer
-The idea here is to rephrase our optimization problem (equation $$(3)$$) to the more general case of multicolor strings. Formally, we slightly change the definitions of the matrices and vectors, and add color representation:
+The idea here is to rephrase our linear approximation of the optimization problem (equation $$(3)$$) to the more general case of multicolor strings. Formally, we slightly change the definitions of the matrices and vectors, and add color representation:
 
 - $$b \in \left[ 0,1 \right]^{hw \times 3}$$ - The flattened RGB image.
-- $$C \in \left[ 0,1 \right]^{k \times 3}$$ - The color dictionary we're using, in RGB.
+- $$C \in \left[ 0,1 \right]^{k \times 3}$$ - The color dictionary. Each row represents the RGB of a different color in the dictionary.
 - $$x \in \left\{ 0,1 \right\}^{n \times k}$$ - A binary vector representing which lines (from all possible nail-pairs) are added to the String-Art solution, and in which color of the color dictionary. We allow at most a single $$1$$ per row.
 - $$A \in \left[ 0,1 \right]^{hw \times n}$$ - The transformation matrix, doesn't change from it's original definition.
 
-The new optimization problem becomes:
+Now we optimize for $$l$$ - the line number (as before), but also for $$c$$ - the color number. The new optimization problem becomes:
 
 $$
-e_{k+1} (l) = \left\| A \left( x_k + I_l \right) C - b \right\|_2^2 \tag{3'}
+e_{k+1} (l, c) = \left\| A \left( x_k + \delta_{l,c} \right) C - b \right\|_2^2 \tag{3'}
 $$
 
-And the update equations (this time I won't show the derivation):
+And the updated equations (this time I won't show the derivation):
 
 $$
-l_{k+1}, c_{k+1} = \arg\min_{l,c} \left\{ e_{k+1} (l) = e_k + 2C_c \cdot r_k^T A_l + \left\| A_l \right\|_2^2 \left\| C_c \right\|_2^2 \right\}  \tag{4'}
+l_{k+1}, c_{k+1} = \arg\min_{l,c} \left\{ e_{k+1} (l, c) = e_k + 2C_{c*} \cdot r_k^T A_{*l} + \left\| A_{*l} \right\|_2^2 \left\| C_{c*} \right\|_2^2 \right\}  \tag{4'}
 $$
 
 $$
-r_{k+1} = r_k + A_{l_{k+1}} \cdot C_{c_{k+1}} \tag{5'}
+r_{k+1} = r_k + A_{*l_{k+1}} C_{c_{k+1}*} \tag{5'}
 $$
 
-With these update equations, we apply the exact same greedy iteration algorithm as the original monochrome solution, with each step adding a string of a new color.
+With $$A_{*l}$$ being the $$l$$-th column of $$A$$, and $$C_{c*}$$ being the $$c$$-th row of $$C$$. With these update equations, we apply the exact same greedy iteration algorithm as the original monochrome solution, with each step adding a string of a new color.
 
 > #### Implementing this in practice
-> There are some software engineering technicalities here, such as how we enforce each color to start from it's previous nail, how we efficiently implement the calculations of equation $$(4'),$$ or how we make sure that we don't switch colors too often.
+> There are some software engineering technicalities here, such as how we enforce each color to start from its previous nail, how we efficiently implement the calculations of equation $$(4'),$$ or how we make sure that we don't switch colors too often.
 
 Finally, as in the previous approach, we assume that the more important lines are found earlier, so we flip the order in postprocessing.
 
@@ -292,9 +315,15 @@ A single pixel color blending in this model is represented by:
 
 $$
 \begin{align*}
-p_i &= 1 - \prod_{j} (1 - C_j)^{A_{ij}} \\
-&= 1 - exp \left( \sum_{j} A_{ij} log \left( 1 - C_j \right)\right) \\
+p_i &= 1 - \prod_{j} (1 - C_{j*})^{x_{ij}} \\
+&= 1 - \exp \left( \sum_{j} x_{ij} \log \left( 1 - C_{j*} \right)\right) \\
 \end{align*}
+$$
+
+$$\Downarrow$$
+
+$$
+\log \left( 1 - p_i \right) = \sum_{j} x_{ij} log \left( 1 - C_{j*} \right)
 $$
 
 Therefore, we can change the inputs accordingly:
@@ -314,10 +343,10 @@ And from here we just solve the same optimization problem as before, with the up
   <div class="caption">Left: MCBL optimization on regular additive space. Right: MCBL optimizer on CMY multiplicative space.</div>
 </div>
 
-### Finding the Color Palette
+### Finding the color palette
 We have just one last problem left to solve. Both methods heavily rely on choosing the correct color palette to approximate the image. From my experience, the algorithm is very sensitive to the chosen colors, and choosing even a slightly off palette will significantly degrade the results for most images. It's therefore very important to choose the best color palette in the preprocessing/initialization step.
 
-Seeing as my aim was to have the algorithm be as much plug-and-play as possible, I gave a shot at a few different approaches, varying in levels of automaticity. I'll lay out my trials process approximately as it was.
+Seeing as my aim was to have the algorithm be as much plug-and-play as possible, I gave a shot at a few different approaches, varying in levels of automaticity. I'll lay out my trials process approximately as it went.
 1. **Manual color palette** - The least automatic method, just receive a palette defined by the user. This has the best potential of being the most accurate, but finding the exact right palette may be hard and tiresome.
 2. **Clustering-based palette** - Run a clustering algorithm (such as KMeans or Median-Cut) on the image pixels to choose the $$k$$ most dominant colors. This is the most automatic method, as it has no need for a predefined color dictionary, but unfortunately didn't work for most images, since clustering algorithms tend to find average centers for clusters, and not the most common ones.
 3. **Histogram-based palette** - First define a fairly small (~$$25$$ colors) but highly representative color dictionary. Now we calculate a discrete histogram on the image pixels with this dictionary. An important addition here is to smooth the histogram, so that different shades of the same color (or perceptually similar colors) will also be accounted for. This method unfortunately resulted in picking different shades of the same color over other, more important, colors, since colors with a very high representation (e.g., background) also increased their neighbor's histogram value.
@@ -328,7 +357,7 @@ Seeing as my aim was to have the algorithm be as much plug-and-play as possible,
 Finally, the method I arrived at was to take the "best of all worlds":
 1. Define a representative color dictionary.
 2. Resize the image to be $$512 \times 512$$ max, for efficiency.
-3. Calculate $$10$$ most common colors in smoothed histogram (very quick), reducing the color dictionary size for the next step.
+3. Calculate $$10$$ most common colors in the smoothed histogram (very quick), reducing the color dictionary size for the next step.
 4. Simulate dithering error on small patches for all color combinations on the reduced color dictionary, and take the best one (much quicker than checking all combinations from the original dictionary).
 
 ** In all steps, we fix black and white to the palette, since these provide the main details in the image.
@@ -346,17 +375,17 @@ Finally, the method I arrived at was to take the "best of all worlds":
 ---
 
 ## Future Work
-I'm winding down the work on this project for now, but here are a few directions I would love to explore in the future.
+I think this just about wraps up my work on this project for now, but here are a few directions I would love to explore in the future.  
 - ~~**Better palette estimation method** - Having the algorithms success heavily rely on this part, I find it the most urgent step of the algorithm to improve. Maybe a histogram-based method would work here.~~
-- **Better thread combination method** - The two proposed methods (interweave and combine) work pretty fine, but I do believe that better results can be achieved here. The *important = last* approach might also be suboptimal.
-- **Deep Learning NN based algorithm** - Having a lot of background in the field of Deep Learning, as this is what I do in my day-job, I would really like to formalize the problem and solution as a neural network learning/optimization problem and give it a go sometime.
+- **Better thread combination method** - The two proposed methods (_interweave_ and _combine_) work pretty fine, but I do believe that better results can be achieved here. The *important = last* approach might also be suboptimal.
+- **Deep Learning NN-based algorithm** - Having a lot of background in the field of Deep Learning, as this is what I do in my day-job, I would really like to formalize the problem and solution as a neural network learning/optimization problem and give it a go sometime.
 - **Better Robustness** - The aim of this project was for the algorithm to work automatically on _any_ image. This was only partially achieved as, from my experience, the algorithm works better on single or double color palette images, and finds it harder to achieve good results on full color images. This leads me to...
 - **Get a deeper understanding on color blending** - The way we simulate the multicolor String-Art makes assumptions on color blending which might miss how this actually works in real life. In my simulation, I assume natural RGB-space blending, but in real life occlusions are to be considered, and color blending is probably more subtle (or at least modelled in a different color space). Using a better, more accurate, understanding of the physical model could open the door to working with more diverse, in-the-wild images.
+- **Actually try to physically create one of the images**, and see how it turns out in real life compared to the simulation results.
 
 I believe that this concludes the deep-dive into the process of developing my String-Art project. Although this has been a fairly long and thorough post, there are still some aspects of the project that I haven't covered, such as how we turn this into a PDF with instructions for physically making the String-Art, how we convert a non-continuous list of lines to a continuous one, how we initialize the canvas, and some other minor improvements I made in the algorithm.
 
 Feel free to try the [Colab playground](https://colab.research.google.com/github/roy-hachnochi/string-art/blob/main/algorithmic_string_art_playground.ipynb), or reach out via [Email](roy.hachnochi@gmail.com) or [GitHub](https://github.com/roy-hachnochi/string-art) to bounce off ideas and improvements.
-
 
 ---
 
@@ -374,6 +403,7 @@ Feel free to try the [Colab playground](https://colab.research.google.com/github
     <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/cat2_MCBL_log_string_art.jpg" alt="cat2"></div></div>
     <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/cat_BL_string_art.jpg" alt="cat"></div></div>
     <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/eye_BL_string_art.jpg" alt="eye"></div></div>
+    <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/tommy_MCBL_log_colors_string_art.jpg" alt="tommy"></div></div>
     <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/earth_BL_string_art.jpg" alt="earth"></div></div>
     <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/coraline_MCBL_string_art.jpg" alt="coraline"></div></div>
     <div class="hover-effect"><div class="slide"><img src="{{ site.baseurl }}/assets/images/duck_BL_string_art.jpg" alt="duck"></div></div>
@@ -407,6 +437,8 @@ Feel free to try the [Colab playground](https://colab.research.google.com/github
 </div>
 
 ---
+
+Special thanks to [Shira Bar On](https://shira-baron.com) for carefully reading initial drafts of this page and giving kind and thoughtful comments, and for being the first one aside of me to try out the algorithm on her own image.
 
 ## References
 - **[A New Way to Knit (2016)](https://artof01.com/vrellis/works/knit.html), Petros Vrellis** - The original String-Art project, which came up with this wonderful and creative idea, and inspired the work for everyone playing around with this problem.

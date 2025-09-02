@@ -137,6 +137,7 @@ If neither `--colors` nor `--rgbcmykw` are given, the algorithm will use cluster
   <img src="docs/assets/images/cat2_MCBL_log_string_art.jpg" height="150">
   <img src="docs/assets/images/cat_BL_string_art.jpg" height="150">
   <img src="docs/assets/images/eye_BL_string_art.jpg" height="150">
+  <img src="docs/assets/images/tommy_MCBL_log_colors_string_art.jpg" height="150">
   <img src="docs/assets/images/earth_BL_string_art.jpg" height="150">
   <img src="docs/assets/images/coraline_MCBL_string_art.jpg" height="150">
   <img src="docs/assets/images/duck_BL_string_art.jpg" height="150">
